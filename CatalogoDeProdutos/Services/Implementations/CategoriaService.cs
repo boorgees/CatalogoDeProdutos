@@ -4,18 +4,18 @@ using CatalogoDeProdutos.Services.Interfaces;
 
 namespace CatalogoDeProdutos.Services.Implementations
 {
-    public class CategoriaService : ICategoriaService
+    public class CategoriaService (CategoriaRepository categoriaRepository) : ICategoriaService
     {
-        private readonly CategoriaRepository _categoriaRepository;
-        
-        public CategoriaService(CategoriaRepository categoriaRepository)
-        {
-            _categoriaRepository = categoriaRepository;
-        }
+        // private readonly CategoriaRepository _categoriaRepository;
+        //
+        // public CategoriaService(CategoriaRepository categoriaRepository)
+        // {
+        //     _categoriaRepository = categoriaRepository;
+        // }
 
         public async Task<IEnumerable<Categoria>> ObterTodosAsync()
         {
-            var categorias = await _categoriaRepository.ObterTodosAsync();
+            var categorias = await categoriaRepository.ObterTodosAsync();
 
             if (!categorias.Any())
             {
@@ -27,7 +27,7 @@ namespace CatalogoDeProdutos.Services.Implementations
         
         public async Task<Categoria>? ObterPorIdAsync(int id)
         {
-            var categoria = await _categoriaRepository.ObterPorIdAsync(id);
+            var categoria = await categoriaRepository.ObterPorIdAsync(id);
 
             if (categoria == null)
             {
@@ -45,7 +45,7 @@ namespace CatalogoDeProdutos.Services.Implementations
 
             try
             {
-                await _categoriaRepository.AdicionarAsync(categoria);
+                await categoriaRepository.AdicionarAsync(categoria);
                 return categoria;
             }
             catch (Exception ex)
@@ -61,16 +61,19 @@ namespace CatalogoDeProdutos.Services.Implementations
                 throw new ArgumentNullException(nameof(categoria));
             }
 
-            var categoriaExistente = await _categoriaRepository.ObterPorIdAsync(categoria.Id);
-            if (categoriaExistente == null)
-            {
-                throw new Exception("Categoria não encontrada.");
-            }
-
+            var categoriaExistente = await categoriaRepository.ObterPorIdAsync(categoria.Id);
+           
             try
             {
-                await _categoriaRepository.AtualizarAsync(categoria);
-                return categoria;
+                categoriaExistente.Nome = !string.IsNullOrEmpty(categoria.Nome) 
+                    ? categoria.Nome
+                    : categoriaExistente.Nome;
+                
+                categoriaExistente.Descricao = categoria.Descricao;
+                categoriaExistente.ImgUrl = categoria.ImgUrl;
+                
+                await categoriaRepository.AtualizarAsync(categoriaExistente);
+                return categoriaExistente;
             }
             catch (Exception e)
             {
@@ -80,7 +83,7 @@ namespace CatalogoDeProdutos.Services.Implementations
         
         public async Task RemoverAsync(int id)
         {
-            var categoria = await _categoriaRepository.ObterPorIdAsync(id);
+            var categoria = await categoriaRepository.ObterPorIdAsync(id);
             if (categoria == null)
             {
                 throw new Exception($"Categoria com ID {id} não encontrada.");
@@ -88,7 +91,7 @@ namespace CatalogoDeProdutos.Services.Implementations
 
             try
             {
-                await _categoriaRepository.RemoverAsync(categoria.Id);
+                await categoriaRepository.RemoverAsync(categoria.Id);
             }
             catch (Exception e)
             {

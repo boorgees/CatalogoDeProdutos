@@ -5,45 +5,42 @@ using Microsoft.EntityFrameworkCore;
 
 namespace CatalogoDeProdutos.Repositories.Implementations
 {
-    public class CategoriaRepository : ICategoriaRepository_
+    public class CategoriaRepository(AppDbContext context) : ICategoriaRepository_
     {
-        private readonly AppDbContext _context;
-
-        public CategoriaRepository(AppDbContext context)
-        {
-            _context = context;
-        }
-        
         public async Task<IEnumerable<Categoria?>> ObterTodosAsync()
         {
-            var categorias = await _context.Categorias.ToListAsync();
+            var categorias = await context.Categorias.ToListAsync();
             return categorias;
         }
+
         public async Task<Categoria?> ObterPorIdAsync(int id)
         {
-            var categoria =  await _context.Categorias.FirstOrDefaultAsync(c => c.Id == id);
+            var categoria = await context.Categorias.FirstOrDefaultAsync(c => c.Id == id);
             return categoria;
         }
         
         public async Task<Categoria> AdicionarAsync(Categoria categoria)
         {
-            var categoriaAdicionada = await _context.Categorias.AddAsync(categoria);
-            await _context.SaveChangesAsync();
+            var categoriaAdicionada = await context.Categorias.AddAsync(categoria);
+            await context.SaveChangesAsync();
             return categoriaAdicionada.Entity;
         }
         
         public async Task<Categoria> AtualizarAsync(Categoria categoria)
         {
-            _context.Categorias.Update(categoria);
-            await _context.SaveChangesAsync();
+            context.Categorias.Update(categoria);
+            await context.SaveChangesAsync();
             return categoria;
         }
-        public Task? RemoverAsync(int id)
+
+        public async Task RemoverAsync(int id)
         {
-            var categoria = _context.Categorias.FirstOrDefault(c => c.Id == id);
-            _context.Categorias.Remove(categoria);
-            _context.SaveChanges();
-            return Task.CompletedTask;
+            var categoria = await context.Categorias.FirstOrDefaultAsync(c => c.Id == id);
+            if (categoria != null)
+            {
+                context.Categorias.Remove(categoria);
+                await context.SaveChangesAsync();
+            }
         }
     }
 }

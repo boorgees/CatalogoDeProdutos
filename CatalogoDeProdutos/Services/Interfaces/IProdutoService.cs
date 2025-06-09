@@ -1,8 +1,8 @@
 using CatalogoDeProdutos.Models;
 
-namespace CatalogoDeProdutos.Repositories.Interfaces
+namespace CatalogoDeProdutos.Services.Interfaces
 {
-    public interface IProdutoRepository
+    public interface IProdutoService
     {
         Task<IEnumerable<Produto>> ObterTodosAsync();
         Task<Produto?> ObterPorIdAsync(int id);
