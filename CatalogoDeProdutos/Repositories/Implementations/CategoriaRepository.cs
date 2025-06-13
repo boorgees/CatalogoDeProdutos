@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace CatalogoDeProdutos.Repositories.Implementations
 {
-    public class CategoriaRepository(AppDbContext context) : ICategoriaRepository_
+    public class CategoriaRepository(AppDbContext context) : ICategoriaRepository
     {
         public async Task<IEnumerable<Categoria?>> ObterTodosAsync()
         {

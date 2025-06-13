@@ -1,4 +1,8 @@
 using CatalogoDeProdutos.Data;
+using CatalogoDeProdutos.Repositories.Implementations;
+using CatalogoDeProdutos.Repositories.Interfaces;
+using CatalogoDeProdutos.Services.Implementations;
+using CatalogoDeProdutos.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -9,6 +13,12 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddScoped<ICategoriaService, CategoriaService>();
+builder.Services.AddScoped<IProdutoService, ProdutoService>();
+builder.Services.AddScoped<ICategoriaRepository, CategoriaRepository>();
+builder.Services.AddScoped<IProdutoRepository, ProdutoRepository>();
+builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
+
 // Configuração do NSwag para Swagger UI
 builder.Services.AddSwaggerGen();
 

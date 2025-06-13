@@ -1,11 +1,12 @@
 using CatalogoDeProdutos.Models;
 using CatalogoDeProdutos.Repositories.Implementations;
+using CatalogoDeProdutos.Repositories.Interfaces;
 using CatalogoDeProdutos.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
 namespace CatalogoDeProdutos.Services.Implementations
 {
-    public class ProdutoService (ProdutoRepository produtoRepository) : IProdutoService
+    public class ProdutoService (IProdutoRepository produtoRepository) : IProdutoService
     {
         public async Task<IEnumerable<Produto>> ObterTodosAsync()
         {

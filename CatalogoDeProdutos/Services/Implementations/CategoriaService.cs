@@ -1,10 +1,11 @@
 using CatalogoDeProdutos.Models;
 using CatalogoDeProdutos.Repositories.Implementations;
+using CatalogoDeProdutos.Repositories.Interfaces;
 using CatalogoDeProdutos.Services.Interfaces;
 
 namespace CatalogoDeProdutos.Services.Implementations
 {
-    public class CategoriaService (CategoriaRepository categoriaRepository) : ICategoriaService
+    public class CategoriaService (ICategoriaRepository categoriaRepository) : ICategoriaService
     {
         // private readonly CategoriaRepository _categoriaRepository;
         //

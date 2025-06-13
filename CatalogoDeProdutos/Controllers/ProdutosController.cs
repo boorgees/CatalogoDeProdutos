@@ -1,9 +1,6 @@
-using CatalogoDeProdutos.Data;
 using Microsoft.AspNetCore.Mvc;
 using CatalogoDeProdutos.Models;
-using Microsoft.AspNetCore.Http.HttpResults;
-using Microsoft.EntityFrameworkCore;
-
+using CatalogoDeProdutos.Services.Interfaces;
 
 namespace CatalogoDeProdutos.Controllers
 {
@@ -11,36 +8,44 @@ namespace CatalogoDeProdutos.Controllers
     [Route("[controller]")]
     public class ProdutosController : ControllerBase
     {
-        private readonly AppDbContext _context;
-        
-        public ProdutosController(AppDbContext context)
+        private readonly IProdutoService _produtoService;
+    
+        public ProdutosController(IProdutoService produtoService)
         {
-            _context = context;
+            _produtoService = produtoService;
         }
         
-        [HttpGet()]
+        [HttpGet]
         public async Task<ActionResult<IEnumerable<Produto>>> ObterTodosAsync()
         {
-            var produtos = await _context.Produtos
-                .AsNoTracking()
-                .ToListAsync();
+            var produtos = await _produtoService.ObterTodosAsync();
 
-            if (!produtos.Any())
+            if (produtos is null)
             {
                 return NotFound("Nenhum produto encontrado.");
             }
 
             return Ok(produtos);
         }
-
+        
         [HttpGet("{id:int}")]
         public async Task<ActionResult<Produto>> ObterPorIdAsync(int id)
         {
-            var produto = await _context.Produtos.FirstOrDefaultAsync(p => p.Id == id);
-            
-            return produto == null ? NotFound("Produto não encontrado.") : Ok(produto);
-        }
+            var produto = await _produtoService.ObterPorIdAsync(id);
+    
+            if (produto is null || produto.Id == 0)
+            {
+                return BadRequest("Insira um ID válido para procurar o produto.");
+            }
 
-        
+            try
+            {
+                return Ok(produto);
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, "Ocorreu um erro, contate o servidor.");
+            }
+        }
     }
 }

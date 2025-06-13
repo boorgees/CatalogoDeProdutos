@@ -9,13 +9,13 @@ namespace CatalogoDeProdutos.Repositories.Implementations
     {
         public async Task<IEnumerable<Produto>> ObterTodosAsync()
         {
-            var produtos = await context.Produtos.ToListAsync();
+            var produtos = await context.Produtos.AsNoTracking().ToListAsync();
             return produtos;
         }
         
         public async Task<Produto?> ObterPorIdAsync(int id)
         {
-            var produto = await context.Produtos.FirstOrDefaultAsync(p => p.Id == id);
+            var produto = await context.Produtos.AsNoTracking().FirstOrDefaultAsync(p => p.Id == id);
             return produto;
         }
         

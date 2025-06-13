@@ -2,7 +2,7 @@ using CatalogoDeProdutos.Models;
 
 namespace CatalogoDeProdutos.Repositories.Interfaces
 {
-    public interface ICategoriaRepository_
+    public interface ICategoriaRepository
     {
         Task<IEnumerable<Categoria?>> ObterTodosAsync();
         Task<Categoria>? ObterPorIdAsync(int id);
