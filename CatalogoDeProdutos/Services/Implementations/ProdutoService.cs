@@ -1,100 +1,110 @@
+using System.Linq.Expressions;
 using CatalogoDeProdutos.Models;
-using CatalogoDeProdutos.Repositories.Implementations;
 using CatalogoDeProdutos.Repositories.Interfaces;
 using CatalogoDeProdutos.Services.Interfaces;
-using Microsoft.EntityFrameworkCore;
 
 namespace CatalogoDeProdutos.Services.Implementations
 {
-    public class ProdutoService (IProdutoRepository produtoRepository) : IProdutoService
+    public class ProdutoService(IProdutoRepository produtoRepository) : IProdutoService
     {
         public async Task<IEnumerable<Produto>> ObterTodosAsync()
         {
-            var produtos = await produtoRepository.ObterTodosAsync();
-            if (!produtos.Any())
-            {
-                throw new Exception("Nenhum produto encontrado.");
-            }
-
+            var produtos = new List<Produto>();
+            await foreach (var produto in produtoRepository.GetAll()) produtos.Add(produto);
             return produtos;
         }
-        
+
         public async Task<Produto?> ObterPorIdAsync(int id)
         {
-            var produto = await produtoRepository.ObterPorIdAsync(id);
-            if (produto == null)
-            {
-                throw new Exception("Produto não encontrado.");
-            }
+            Expression<Func<Produto, bool>> predicate = p => p.Id == id;
+            var produto = await produtoRepository.GetById(predicate);
             return produto;
         }
-        
+
         public async Task<Produto> AdicionarAsync(Produto produto)
         {
-            var produtoNovo = await produtoRepository.AdicionarAsync(produto);
-            if (produtoNovo.Nome == null )
+            if (string.IsNullOrEmpty(produto.Nome))
             {
                 throw new Exception("Campos obrigatórios não preenchidos.");
             }
 
             try
             {
-                await produtoRepository.AdicionarAsync(produtoNovo);
-                return produtoNovo;
+                return await produtoRepository.Create(produto);
             }
             catch (Exception e)
             {
                 throw new Exception(e.Message);
             }
         }
-        
+
         public async Task<Produto> AtualizarAsync(Produto produto)
         {
             if (produto == null)
+            {
                 throw new ArgumentNullException(nameof(produto));
+            }
 
             if (produto.Id <= 0)
+            {
                 throw new ArgumentException("Id do produto inválido");
-            
-            var produtoExistente = await produtoRepository.ObterPorIdAsync(produto.Id);
+            }
+
+            Expression<Func<Produto, bool>> predicate = p => p.Id == produto.Id;
+            var produtoExistente = await produtoRepository.GetById(predicate);
             if (produtoExistente == null)
+            {
                 throw new Exception($"Produto com ID {produto.Id} não encontrado");
+            }
 
             try
             {
-                produtoExistente.Nome = !string.IsNullOrEmpty(produto.Nome) 
-                    ? produto.Nome 
+                produtoExistente.Nome = !string.IsNullOrEmpty(produto.Nome)
+                    ? produto.Nome
                     : produtoExistente.Nome;
-            
+
                 produtoExistente.Descricao = produto.Descricao;
                 produtoExistente.ImgUrl = produto.ImgUrl;
 
-                await produtoRepository.AtualizarAsync(produtoExistente);
-                return produtoExistente;
+                return await produtoRepository.Update(produtoExistente);
             }
             catch (Exception ex)
             {
                 throw new Exception("Erro ao atualizar produto", ex);
             }
         }
-        
+
         public async Task RemoverAsync(int id)
         {
             if (id <= 0)
+            {
                 throw new ArgumentException("Id do produto inválido");
+            }
 
-            var produto = await produtoRepository.ObterPorIdAsync(id);
+            Expression<Func<Produto, bool>> predicate = p => p.Id == id;
+            var produto = await produtoRepository.GetById(predicate);
             if (produto == null)
-                throw new Exception($"Produto com ID {id} não encontrado");
+            {
+                return;
+            }
 
             try
             {
-                await produtoRepository.RemoverAsync(id);
+                await produtoRepository.Delete(produto);
             }
             catch (Exception ex)
             {
                 throw new Exception("Erro ao remover produto", ex);
             }
+        }
+
+        public async IAsyncEnumerable<Produto?> GetProdutoPorCategoria(int id)
+        {
+            await foreach (var produto in produtoRepository.GetAll())
+                if (produto.CategoriaId == id)
+                {
+                    yield return produto;
+                }
         }
     }
 }

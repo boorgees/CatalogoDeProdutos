@@ -1,4 +1,6 @@
-﻿namespace CatalogoDeProdutos.Models
+﻿using System.Text.Json.Serialization;
+
+namespace CatalogoDeProdutos.Models
 {
     public class Produto
     {
@@ -7,6 +9,8 @@
         public string? Descricao { get; set; }
         public string? ImgUrl { get; set; }
         public int CategoriaId { get; set; }
-        public Categoria Categoria { get; set; }
+
+        [JsonIgnore]
+        public Categoria? Categoria { get; set; }
     }
 }

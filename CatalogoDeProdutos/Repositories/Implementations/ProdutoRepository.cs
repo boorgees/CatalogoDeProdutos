@@ -5,39 +5,18 @@ using Microsoft.EntityFrameworkCore;
 
 namespace CatalogoDeProdutos.Repositories.Implementations
 {
-    public class ProdutoRepository(AppDbContext context) : IProdutoRepository
+    public class ProdutoRepository : Repository<Produto>, IProdutoRepository
     {
-        public async Task<IEnumerable<Produto>> ObterTodosAsync()
+        public ProdutoRepository(AppDbContext context) : base(context)
         {
-            var produtos = await context.Produtos.AsNoTracking().ToListAsync();
-            return produtos;
         }
-        
-        public async Task<Produto?> ObterPorIdAsync(int id)
+        public async IAsyncEnumerable<Produto> GetProdutoPorCategoria(int id)
         {
-            var produto = await context.Produtos.AsNoTracking().FirstOrDefaultAsync(p => p.Id == id);
-            return produto;
-        }
-        
-        public async Task<Produto> AdicionarAsync(Produto produto)
-        {
-            var produtoAdicionado = await context.Produtos.AddAsync(produto);
-            return produtoAdicionado.Entity;
-        }
-        
-        public Task<Produto> AtualizarAsync(Produto produto)
-        {
-            context.Produtos.Update(produto);
-            return Task.FromResult(produto);
-        }
-        
-        public async Task RemoverAsync(int id)
-        {
-            var produto = await context.Produtos.FirstOrDefaultAsync(p => p.Id == id);
-            if (produto != null)
-            {
-                context.Produtos.Remove(produto);
-            }
+            var produtos = _context.Produtos
+                .Where(p => p.CategoriaId == id)
+                .AsAsyncEnumerable();
+
+            await foreach (var produto in produtos) yield return produto;
         }
     }
 }
