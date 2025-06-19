@@ -1,25 +1,17 @@
 using CatalogoDeProdutos.Models;
 using CatalogoDeProdutos.Repositories.Interfaces;
-using CatalogoDeProdutos.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CatalogoDeProdutos.Controllers
 {
     [ApiController]
     [Route("[controller]")]
-    public class ProdutosController : ControllerBase
+    public class ProdutosController(IUnityOfWork uof) : ControllerBase
     {
-        private readonly IUnityOfWork _uof;
-
-        public ProdutosController(IProdutoService produtoService, IUnityOfWork uof)
-        {
-            _uof = uof;
-        }
-
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Produto>>> ObterTodosAsync()
         {
-            var produtos = await _uof.ProdutoService.ObterTodosAsync();
+            var produtos = await uof.ProdutoService.ObterTodosAsync();
 
             if (produtos == null || !produtos.Any())
             {
@@ -32,7 +24,7 @@ namespace CatalogoDeProdutos.Controllers
         [HttpGet("{id:int}", Name = "ObterProdutoPorId")]
         public async Task<ActionResult<Produto>> ObterPorIdAsync(int id)
         {
-            var produto = await _uof.ProdutoService.ObterPorIdAsync(id);
+            var produto = await uof.ProdutoService.ObterPorIdAsync(id);
 
             if (produto == null)
             {
@@ -47,11 +39,11 @@ namespace CatalogoDeProdutos.Controllers
         {
             try
             {
-                await _uof.ProdutoService.AdicionarAsync(produto);
-                _uof.Commit();
+                await uof.ProdutoService.AdicionarAsync(produto);
+                uof.Commit();
 
-                // Recarrega o produto para garantir que o Id foi preenchido
-                var produtoCriado = await _uof.ProdutoService.ObterPorIdAsync(produto.Id);
+
+                var produtoCriado = await uof.ProdutoService.ObterPorIdAsync(produto.Id);
 
                 return CreatedAtRoute("ObterProdutoPorId", new { id = produtoCriado.Id }, produtoCriado);
             }
@@ -66,8 +58,8 @@ namespace CatalogoDeProdutos.Controllers
         {
             try
             {
-                await _uof.ProdutoService.AtualizarAsync(produto);
-                _uof.Commit();
+                await uof.ProdutoService.AtualizarAsync(produto);
+                uof.Commit();
                 return Ok(produto);
             }
             catch (Exception)
@@ -81,8 +73,8 @@ namespace CatalogoDeProdutos.Controllers
         {
             try
             {
-                await _uof.ProdutoService.RemoverAsync(id);
-                _uof.Commit();
+                await uof.ProdutoService.RemoverAsync(id);
+                uof.Commit();
                 return Ok();
             }
             catch (Exception)

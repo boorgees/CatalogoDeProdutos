@@ -26,9 +26,10 @@ namespace CatalogoDeProdutos.Services.Implementations
             return categorias;
         }
 
-        public async Task<Categoria>? ObterPorIdAsync(Expression<Func<Categoria, bool>> id)
+        public async Task<Categoria>? ObterPorIdAsync(int id)
         {
-            var categoria = await _categoriaRepository.GetById(id);
+            Expression<Func<Categoria, bool>> predicate = p => p.Id == id;
+            var categoria = await _categoriaRepository.GetById(predicate);
 
             if (categoria == null)
             {
@@ -37,6 +38,7 @@ namespace CatalogoDeProdutos.Services.Implementations
 
             return categoria;
         }
+
         public async Task<Categoria> AdicionarAsync(Categoria categoria)
         {
             if (categoria == null)
