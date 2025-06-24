@@ -1,3 +1,4 @@
+using CatalogoDeProdutos.DTOs;
 using CatalogoDeProdutos.Models;
 using CatalogoDeProdutos.Repositories.Interfaces;
 using Microsoft.AspNetCore.Mvc;
@@ -9,22 +10,22 @@ namespace CatalogoDeProdutos.Controllers
     public class CategoriasController(IUnityOfWork uof) : ControllerBase
     {
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Categoria>>> ObterTodosAsync()
+        public async Task<ActionResult<IEnumerable<CategoriaDTO>>> ObterTodosAsync() // OK
         {
             var categorias = await uof.CategoriaService.ObterTodosAsync();
 
             if (categorias == null || !categorias.Any())
             {
-                return NotFound("Nenhum produto encontrado.");
+                return NotFound("Nenhuma categoria encontrada.");
             }
 
             return Ok(categorias);
         }
 
-        [HttpGet("{id:int}", Name = "ObterCategoriaPorId")]
-        public async Task<ActionResult<Categoria>> ObterPorIdAsync(int id)
+        [HttpGet("{id:int}", Name = "ObterCategoriaPorId")] // OK
+        public async Task<ActionResult<CategoriaDTO>> ObterPorIdAsync(int id)
         {
-            var categoria = await uof.CategoriaService.ObterPorIdAsync(id)!;
+            var categoria = await uof.CategoriaService.ObterPorIdAsync(id);
 
             if (categoria == null)
             {
@@ -35,15 +36,22 @@ namespace CatalogoDeProdutos.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult<Categoria>> AdicionarAsync([FromBody] Categoria categoria)
+        public async Task<ActionResult<CategoriaDTO>> AdicionarAsync([FromBody] CategoriaDTO categoriaDto)
         {
             try
             {
-                await uof.CategoriaService.AdicionarAsync(categoria);
+                var categoriaEntity = await uof.CategoriaService.AdicionarAsync(categoriaDto);
                 uof.Commit();
-                var categoriaCriada = await uof.CategoriaService.ObterPorIdAsync(categoria.Id);
 
-                return CreatedAtRoute("ObterCategoriaPorId", new { id = categoriaCriada.Id }, categoriaCriada);
+                var categoriaCriadaDto = new CategoriaDTO
+                {
+                    Id = categoriaEntity.Id,
+                    Nome = categoriaEntity.Nome,
+                    Descricao = categoriaEntity.Descricao,
+                    ImgUrl = categoriaEntity.ImgUrl
+                };
+
+                return CreatedAtRoute("ObterCategoriaPorId", new { id = categoriaCriadaDto.Id }, categoriaCriadaDto);
             }
             catch (Exception ex)
             {
@@ -51,9 +59,14 @@ namespace CatalogoDeProdutos.Controllers
             }
         }
 
-        [HttpPut("{id:int}")]
-        public async Task<ActionResult<Categoria>> Put(int id, Categoria categoria)
+        [HttpPut("{id:int}")] // OK
+        public async Task<ActionResult<CategoriaDTO>> Put(int id, CategoriaDTO categoria)
         {
+            if (id != categoria.Id)
+            {
+                return BadRequest("O id da requisição não corresponde ao id do objeto.");
+            }
+
             try
             {
                 await uof.CategoriaService.AtualizarAsync(categoria);
@@ -66,8 +79,8 @@ namespace CatalogoDeProdutos.Controllers
             }
         }
 
-        [HttpDelete("{id:int}")]
-        public async Task<ActionResult<Categoria>> Delete(int id)
+        [HttpDelete("{id:int}")] // OK
+        public async Task<ActionResult<CategoriaDTO>> Delete(int id)
         {
             try
             {

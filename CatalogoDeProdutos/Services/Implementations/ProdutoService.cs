@@ -1,4 +1,5 @@
 using System.Linq.Expressions;
+using CatalogoDeProdutos.DTOs;
 using CatalogoDeProdutos.Models;
 using CatalogoDeProdutos.Repositories.Interfaces;
 using CatalogoDeProdutos.Services.Interfaces;
@@ -98,9 +99,9 @@ namespace CatalogoDeProdutos.Services.Implementations
             }
         }
 
-        public async IAsyncEnumerable<Produto?> GetProdutoPorCategoria(int id)
+        public async IAsyncEnumerable<ProdutoDTO?> GetProdutoPorCategoria(int id)
         {
-            await foreach (var produto in produtoRepository.GetAll())
+            await foreach (var produto in produtoRepository.GetProdutoPorCategoria(id))
                 if (produto.CategoriaId == id)
                 {
                     yield return produto;

@@ -11,7 +11,6 @@ namespace CatalogoDeProdutos.Repositories.Implementations
         private readonly AppDbContext _context;
         private readonly IProdutoRepository _produtoRepository;
         private ICategoriaService? _categoriaService;
-
         private IProdutoService? _produtoService;
 
         public UnityOfWork(

@@ -1,4 +1,5 @@
 using System.Linq.Expressions;
+using CatalogoDeProdutos.DTOs;
 using CatalogoDeProdutos.Models;
 using CatalogoDeProdutos.Repositories.Interfaces;
 using CatalogoDeProdutos.Services.Interfaces;
@@ -13,7 +14,7 @@ namespace CatalogoDeProdutos.Services.Implementations
         {
             _categoriaRepository = categoriaRepository;
         }
-        public async Task<IEnumerable<Categoria>> ObterTodosAsync()
+        public async Task<IEnumerable<CategoriaDTO>> ObterTodosAsync()
         {
             var categorias = new List<Categoria>();
             await foreach (var categoria in _categoriaRepository.GetAll()) categorias.Add(categoria);
@@ -23,10 +24,18 @@ namespace CatalogoDeProdutos.Services.Implementations
                 throw new Exception("Nenhuma categoria encontrada.");
             }
 
-            return categorias;
+            var categoriasDto = categorias.Select(c => new CategoriaDTO
+            {
+                Id = c.Id,
+                Nome = c.Nome,
+                Descricao = c.Descricao,
+                ImgUrl = c.ImgUrl
+            }).ToList();
+
+            return categoriasDto;
         }
 
-        public async Task<Categoria>? ObterPorIdAsync(int id)
+        public async Task<CategoriaDTO>? ObterPorIdAsync(int id)
         {
             Expression<Func<Categoria, bool>> predicate = p => p.Id == id;
             var categoria = await _categoriaRepository.GetById(predicate);
@@ -36,51 +45,39 @@ namespace CatalogoDeProdutos.Services.Implementations
                 return null;
             }
 
-            return categoria;
+            var categoriaDto = new CategoriaDTO
+            {
+                Id = categoria.Id,
+                Nome = categoria.Nome,
+                Descricao = categoria.Descricao,
+                ImgUrl = categoria.ImgUrl
+            };
+
+            return categoriaDto;
         }
 
-        public async Task<Categoria> AdicionarAsync(Categoria categoria)
+        public async Task<Categoria> AdicionarAsync(CategoriaDTO categoriaDto)
         {
-            if (categoria == null)
+            if (categoriaDto == null)
             {
-                throw new ArgumentNullException(nameof(categoria));
+                throw new ArgumentNullException(nameof(categoriaDto));
             }
+
+            var categoria = new Categoria
+            {
+                Nome = categoriaDto.Nome,
+                Descricao = categoriaDto.Descricao,
+                ImgUrl = categoriaDto.ImgUrl
+            };
 
             try
             {
-                await _categoriaRepository.Update(categoria);
+                await _categoriaRepository.Create(categoria);
                 return categoria;
             }
             catch (Exception ex)
             {
                 throw new Exception("Erro ao adicionar categoria.", ex);
-            }
-        }
-
-        public async Task<Categoria> AtualizarAsync(Categoria categoria)
-        {
-            if (categoria == null)
-            {
-                throw new ArgumentNullException(nameof(categoria));
-            }
-
-            var categoriaExistente = await _categoriaRepository.GetById(c => c.Id == categoria.Id);
-
-            try
-            {
-                categoriaExistente.Nome = !string.IsNullOrEmpty(categoria.Nome)
-                    ? categoria.Nome
-                    : categoriaExistente.Nome;
-
-                categoriaExistente.Descricao = categoria.Descricao;
-                categoriaExistente.ImgUrl = categoria.ImgUrl;
-
-                await _categoriaRepository.Update(categoriaExistente);
-                return categoriaExistente;
-            }
-            catch (Exception e)
-            {
-                throw new Exception("Erro ao atualizar categoria.", e);
             }
         }
 
@@ -99,6 +96,34 @@ namespace CatalogoDeProdutos.Services.Implementations
             catch (Exception e)
             {
                 throw new Exception("Erro ao remover categoria.", e);
+            }
+        }
+
+        public async Task<CategoriaDTO> AtualizarAsync(CategoriaDTO categoriaDto)
+        {
+            if (categoriaDto == null)
+            {
+                throw new ArgumentNullException(nameof(categoriaDto));
+            }
+
+            var categoriaExistente = await _categoriaRepository.GetById(c => c.Id == categoriaDto.Id);
+
+            if(categoriaExistente is null)
+                throw new Exception($"Categoria com ID {categoriaDto.Id} não encontrada.");
+
+            try
+            {
+                categoriaExistente.Nome = categoriaDto.Nome;
+                categoriaExistente.Descricao = categoriaDto.Descricao;
+                categoriaExistente.ImgUrl = categoriaDto.ImgUrl;
+
+
+                await _categoriaRepository.Update(categoriaExistente);
+                return categoriaDto;
+            }
+            catch (Exception e)
+            {
+                throw new Exception("Erro ao atualizar categoria.", e);
             }
         }
     }
