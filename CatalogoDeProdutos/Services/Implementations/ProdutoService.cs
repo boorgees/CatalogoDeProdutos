@@ -6,32 +6,113 @@ using CatalogoDeProdutos.Services.Interfaces;
 
 namespace CatalogoDeProdutos.Services.Implementations
 {
-    public class ProdutoService(IProdutoRepository produtoRepository) : IProdutoService
+    public class ProdutoService : IProdutoService
     {
-        public async Task<IEnumerable<Produto>> ObterTodosAsync()
+        private readonly ICategoriaRepository _categoriaRepository;
+        private readonly IProdutoRepository _produtoRepository;
+
+        public ProdutoService(IProdutoRepository produtoRepository, ICategoriaRepository categoriaRepository)
+        {
+            _produtoRepository = produtoRepository;
+            _categoriaRepository = categoriaRepository;
+        }
+
+        public async Task<IEnumerable<ProdutoDTO>> ObterTodosAsync() // OK
         {
             var produtos = new List<Produto>();
-            await foreach (var produto in produtoRepository.GetAll()) produtos.Add(produto);
-            return produtos;
+            try
+            {
+                await foreach (var produto in _produtoRepository.GetAll())
+                    produtos.Add(produto);
+            }
+            catch (Exception e)
+            {
+                throw new Exception("Nenhum produto encontrado.");
+            }
+
+            var produtosDto = produtos.Select(p => new ProdutoDTO
+            {
+                Id = p.Id,
+                Nome = p.Nome,
+                Descricao = p.Descricao,
+                ImgUrl = p.ImgUrl,
+                CategoriaId = p.CategoriaId
+            }).ToList();
+
+            return produtosDto;
         }
 
-        public async Task<Produto?> ObterPorIdAsync(int id)
+        public async Task<ProdutoDTO?> ObterPorIdAsync(int id)
         {
             Expression<Func<Produto, bool>> predicate = p => p.Id == id;
-            var produto = await produtoRepository.GetById(predicate);
-            return produto;
+            var produto = await _produtoRepository.GetById(predicate);
+
+            if (produto == null)
+            {
+                return null;
+            }
+
+            var produtosDto = new ProdutoDTO
+            {
+                Id = produto.Id,
+                Nome = produto.Nome,
+                Descricao = produto.Descricao,
+                ImgUrl = produto.ImgUrl,
+                CategoriaId = produto.CategoriaId
+            };
+
+            return produtosDto;
         }
 
-        public async Task<Produto> AdicionarAsync(Produto produto)
+        public async Task RemoverAsync(int id)
         {
-            if (string.IsNullOrEmpty(produto.Nome))
+            if (id <= 0)
             {
-                throw new Exception("Campos obrigatórios não preenchidos.");
+                throw new ArgumentException("Id do produto inválido");
+            }
+
+            Expression<Func<Produto, bool>> predicate = p => p.Id == id;
+            var produto = await _produtoRepository.GetById(predicate);
+            if (produto == null)
+            {
+                throw new ArgumentNullException($"O produto com ID {id} não existe");
             }
 
             try
             {
-                return await produtoRepository.Create(produto);
+                await _produtoRepository.Delete(produto);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Erro ao remover produto", ex);
+            }
+        }
+
+        public async Task<Produto> AdicionarAsync(ProdutoDTO produto)
+        {
+            if (string.IsNullOrEmpty(produto.Nome))
+            {
+                throw new Exception("Campos obrigatórios não preenchidos");
+            }
+
+            if (produto == null)
+            {
+                throw new NullReferenceException("O produto não está preenchido");
+            }
+
+            var produtoDto = new Produto
+            {
+                Id = produto.Id,
+                Nome = produto.Nome,
+                Descricao = produto.Descricao,
+                ImgUrl = produto.ImgUrl,
+                CategoriaId = produto.CategoriaId
+            };
+
+            try
+            {
+                await _produtoRepository.Create(produtoDto);
+                return produtoDto;
             }
             catch (Exception e)
             {
@@ -39,20 +120,26 @@ namespace CatalogoDeProdutos.Services.Implementations
             }
         }
 
-        public async Task<Produto> AtualizarAsync(Produto produto)
+        public async Task<ProdutoDTO> AtualizarAsync(ProdutoDTO produto)
         {
-            if (produto == null)
-            {
-                throw new ArgumentNullException(nameof(produto));
-            }
-
-            if (produto.Id <= 0)
+            if (produto.Id <= 0 || produto == null)
             {
                 throw new ArgumentException("Id do produto inválido");
             }
 
+            if (produto.CategoriaId <= 0)
+            {
+                throw new ArgumentException("Id da categoria inválido");
+            }
+
+            var categoria = await _categoriaRepository.GetById(c => c.Id == produto.CategoriaId);
+            if (categoria == null)
+            {
+                throw new InvalidOperationException($"A categoria com ID {produto.CategoriaId} não existe");
+            }
+
             Expression<Func<Produto, bool>> predicate = p => p.Id == produto.Id;
-            var produtoExistente = await produtoRepository.GetById(predicate);
+            var produtoExistente = await _produtoRepository.GetById(predicate);
             if (produtoExistente == null)
             {
                 throw new Exception($"Produto com ID {produto.Id} não encontrado");
@@ -66,8 +153,10 @@ namespace CatalogoDeProdutos.Services.Implementations
 
                 produtoExistente.Descricao = produto.Descricao;
                 produtoExistente.ImgUrl = produto.ImgUrl;
+                produtoExistente.CategoriaId = produto.CategoriaId;
 
-                return await produtoRepository.Update(produtoExistente);
+                await _produtoRepository.Update(produtoExistente);
+                return produto;
             }
             catch (Exception ex)
             {
@@ -75,37 +164,29 @@ namespace CatalogoDeProdutos.Services.Implementations
             }
         }
 
-        public async Task RemoverAsync(int id)
+        public async Task<List<ProdutoDTO>> ObterProdutosPorCategoria(int id)
         {
-            if (id <= 0)
-            {
-                throw new ArgumentException("Id do produto inválido");
-            }
+            var produtosDaCategoria = new List<ProdutoDTO>();
 
-            Expression<Func<Produto, bool>> predicate = p => p.Id == id;
-            var produto = await produtoRepository.GetById(predicate);
-            if (produto == null)
+            if (id <= 0 || id == null)
             {
-                return;
+                throw new ArgumentException("Id da categoria deve ser maior que zero e não pode estar vazio", nameof(id));
             }
 
             try
             {
-                await produtoRepository.Delete(produto);
-            }
-            catch (Exception ex)
-            {
-                throw new Exception("Erro ao remover produto", ex);
-            }
-        }
-
-        public async IAsyncEnumerable<ProdutoDTO?> GetProdutoPorCategoria(int id)
-        {
-            await foreach (var produto in produtoRepository.GetProdutoPorCategoria(id))
-                if (produto.CategoriaId == id)
+                var categoria = await _categoriaRepository.GetById(c => c.Id == id);
+                if (categoria.Id != null)
                 {
-                    yield return produto;
+                    produtosDaCategoria = await _produtoRepository.ObterProdutosPorCategoriaAsync(categoria.Id);
                 }
+            }
+            catch (Exception e)
+            {
+                throw new Exception("Erro ao obter produtos por categoria", e);
+            }
+
+            return produtosDaCategoria;
         }
     }
 }

@@ -1,4 +1,4 @@
-using CatalogoDeProdutos.Models;
+using CatalogoDeProdutos.DTOs;
 using CatalogoDeProdutos.Repositories.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
@@ -9,20 +9,39 @@ namespace CatalogoDeProdutos.Controllers
     public class ProdutosController(IUnityOfWork uof) : ControllerBase
     {
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Produto>>> ObterTodosAsync()
+        public async Task<ActionResult<IEnumerable<ProdutoDTO>>> ObterTodosAsync() // OK
         {
             var produtos = await uof.ProdutoService.ObterTodosAsync();
 
             if (produtos == null || !produtos.Any())
             {
-                return NotFound("Nenhum produto encontrado.");
+                return BadRequest("Nenhum produto encontrado.");
             }
 
             return Ok(produtos);
         }
 
-        [HttpGet("{id:int}", Name = "ObterProdutoPorId")]
-        public async Task<ActionResult<Produto>> ObterPorIdAsync(int id)
+        [HttpGet("{id:int}/categorias", Name = "ObterProdutosPorCategoria")]
+        public async Task<ActionResult<IEnumerable<ProdutoDTO>>> ObterProdutosPorCategoriaAsync(int id) // OK
+        {
+            if (id <= 0)
+            {
+                return BadRequest("ID da categoria inválido.");
+            }
+
+            var produtosDaCategoria = await uof.ProdutoService.ObterProdutosPorCategoria(id);
+
+            if (produtosDaCategoria == null || !produtosDaCategoria.Any())
+            {
+                return NotFound($"Nenhum produto encontrado para a categoria {id}.");
+            }
+
+            return Ok(produtosDaCategoria);
+        }
+
+
+        [HttpGet("{id:int}", Name = "ObterProdutoPorId")] // OK
+        public async Task<ActionResult<ProdutoDTO>> ObterPorIdAsync(int id)
         {
             var produto = await uof.ProdutoService.ObterPorIdAsync(id);
 
@@ -35,15 +54,21 @@ namespace CatalogoDeProdutos.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult<Produto>> AdicionarAsync([FromBody] Produto produto)
+        public async Task<ActionResult<ProdutoDTO>> AdicionarAsync([FromBody] ProdutoDTO produto) // OK  
         {
             try
             {
-                await uof.ProdutoService.AdicionarAsync(produto);
+                var produtoEntity = await uof.ProdutoService.AdicionarAsync(produto);
                 uof.Commit();
 
-
-                var produtoCriado = await uof.ProdutoService.ObterPorIdAsync(produto.Id);
+                var produtoCriado = new ProdutoDTO
+                {
+                    Id = produtoEntity.Id,
+                    Nome = produtoEntity.Nome,
+                    Descricao = produtoEntity.Descricao,
+                    ImgUrl = produtoEntity.ImgUrl,
+                    CategoriaId = produtoEntity.CategoriaId
+                };
 
                 return CreatedAtRoute("ObterProdutoPorId", new { id = produtoCriado.Id }, produtoCriado);
             }
@@ -54,7 +79,7 @@ namespace CatalogoDeProdutos.Controllers
         }
 
         [HttpPut("{id:int}")]
-        public async Task<ActionResult<Produto>> Put(int id, Produto produto)
+        public async Task<ActionResult<ProdutoDTO>> Put(int id, ProdutoDTO produto) // OK
         {
             try
             {
@@ -62,24 +87,24 @@ namespace CatalogoDeProdutos.Controllers
                 uof.Commit();
                 return Ok(produto);
             }
-            catch (Exception)
+            catch (Exception exception)
             {
-                return StatusCode(500, "Ocorreu um erro, contate o servidor.");
+                return StatusCode(500, exception.Message);
             }
         }
 
         [HttpDelete("{id:int}")]
-        public async Task<ActionResult<Produto>> Delete(int id)
+        public async Task<ActionResult<ProdutoDTO>> Delete(int id) // OK
         {
             try
             {
                 await uof.ProdutoService.RemoverAsync(id);
                 uof.Commit();
-                return Ok();
+                return Ok("Produto removido com sucesso.");
             }
-            catch (Exception)
+            catch (Exception exception)
             {
-                return StatusCode(500, "Ocorreu um erro, contate o servidor.");
+                return StatusCode(500, exception.Message);
             }
         }
     }

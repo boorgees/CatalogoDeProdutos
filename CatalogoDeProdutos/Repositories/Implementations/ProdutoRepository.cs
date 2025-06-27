@@ -11,21 +11,19 @@ namespace CatalogoDeProdutos.Repositories.Implementations
         public ProdutoRepository(AppDbContext context) : base(context)
         {
         }
-        public async IAsyncEnumerable<ProdutoDTO> GetProdutoPorCategoria(int id)
+        public async Task<List<ProdutoDTO>> ObterProdutosPorCategoriaAsync(int categoriaId)
         {
-            var produtos = _context.Produtos
-                .Where(p => p.CategoriaId == id)
-                .AsAsyncEnumerable();
-
-            await foreach (var produto in produtos)
-                yield return new ProdutoDTO
+            return await _context.Produtos
+                .Where(p => p.CategoriaId == categoriaId)
+                .Select(p => new ProdutoDTO
                 {
-                    Id = produto.Id,
-                    Nome = produto.Nome,
-                    Descricao = produto.Descricao,
-                    ImgUrl = produto.ImgUrl,
-                    CategoriaId = produto.CategoriaId
-                };
+                    Id = p.Id,
+                    Nome = p.Nome,
+                    Descricao = p.Descricao,
+                    ImgUrl = p.ImgUrl,
+                    CategoriaId = p.CategoriaId
+                })
+                .ToListAsync();
         }
     }
 }

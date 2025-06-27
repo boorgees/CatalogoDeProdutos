@@ -25,14 +25,13 @@ namespace CatalogoDeProdutos.Repositories.Implementations
 
         public IProdutoService ProdutoService
         {
-            get { return _produtoService = _produtoService ?? new ProdutoService(_produtoRepository); }
+            get { return _produtoService = _produtoService ?? new ProdutoService(_produtoRepository, _categoriaRepository); }
         }
 
         public ICategoriaService CategoriaService
         {
             get { return _categoriaService ??= new CategoriaService(_categoriaRepository); }
         }
-
 
         public void Commit()
         {
