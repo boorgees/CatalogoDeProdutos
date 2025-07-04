@@ -1,5 +1,6 @@
 using System.Linq.Expressions;
 using CatalogoDeProdutos.DTOs;
+using CatalogoDeProdutos.DTOs.Mappings;
 using CatalogoDeProdutos.Models;
 using CatalogoDeProdutos.Repositories.Interfaces;
 using CatalogoDeProdutos.Services.Interfaces;
@@ -30,14 +31,7 @@ namespace CatalogoDeProdutos.Services.Implementations
                 throw new Exception("Nenhum produto encontrado.");
             }
 
-            var produtosDto = produtos.Select(p => new ProdutoDTO
-            {
-                Id = p.Id,
-                Nome = p.Nome,
-                Descricao = p.Descricao,
-                ImgUrl = p.ImgUrl,
-                CategoriaId = p.CategoriaId
-            }).ToList();
+            var produtosDto = produtos.ToProdutoDTOList();
 
             return produtosDto;
         }
@@ -52,14 +46,7 @@ namespace CatalogoDeProdutos.Services.Implementations
                 return null;
             }
 
-            var produtosDto = new ProdutoDTO
-            {
-                Id = produto.Id,
-                Nome = produto.Nome,
-                Descricao = produto.Descricao,
-                ImgUrl = produto.ImgUrl,
-                CategoriaId = produto.CategoriaId
-            };
+            var produtosDto = produto.ToProdutoDTO();
 
             return produtosDto;
         }
@@ -100,14 +87,7 @@ namespace CatalogoDeProdutos.Services.Implementations
                 throw new NullReferenceException("O produto não está preenchido");
             }
 
-            var produtoDto = new Produto
-            {
-                Id = produto.Id,
-                Nome = produto.Nome,
-                Descricao = produto.Descricao,
-                ImgUrl = produto.ImgUrl,
-                CategoriaId = produto.CategoriaId
-            };
+            var produtoDto = produto.ToProduto();
 
             try
             {
@@ -168,22 +148,17 @@ namespace CatalogoDeProdutos.Services.Implementations
         {
             var produtosDaCategoria = new List<ProdutoDTO>();
 
-            if (id <= 0 || id == null)
-            {
-                throw new ArgumentException("Id da categoria deve ser maior que zero e não pode estar vazio", nameof(id));
-            }
-
             try
             {
                 var categoria = await _categoriaRepository.GetById(c => c.Id == id);
-                if (categoria.Id != null)
+                if (categoria.Id != null && categoria.Id > 0)
                 {
                     produtosDaCategoria = await _produtoRepository.ObterProdutosPorCategoriaAsync(categoria.Id);
                 }
             }
-            catch (Exception e)
+            catch (Exception ex)
             {
-                throw new Exception("Erro ao obter produtos por categoria", e);
+                throw new ArgumentException("Erro ao obter produtos por categoria", ex);
             }
 
             return produtosDaCategoria;

@@ -1,4 +1,5 @@
 using CatalogoDeProdutos.DTOs;
+using CatalogoDeProdutos.DTOs.Mappings;
 using CatalogoDeProdutos.Repositories.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
@@ -24,19 +25,21 @@ namespace CatalogoDeProdutos.Controllers
         [HttpGet("{id:int}/categorias", Name = "ObterProdutosPorCategoria")]
         public async Task<ActionResult<IEnumerable<ProdutoDTO>>> ObterProdutosPorCategoriaAsync(int id) // OK
         {
-            if (id <= 0)
+            try
             {
-                return BadRequest("ID da categoria inválido.");
+                var produtosDaCategoria = await uof.ProdutoService.ObterProdutosPorCategoria(id);
+
+                if (produtosDaCategoria == null || !produtosDaCategoria.Any())
+                {
+                    return NotFound($"Nenhum produto encontrado para a categoria {id}.");
+                }
+
+                return Ok(produtosDaCategoria);
             }
-
-            var produtosDaCategoria = await uof.ProdutoService.ObterProdutosPorCategoria(id);
-
-            if (produtosDaCategoria == null || !produtosDaCategoria.Any())
+            catch (Exception ex)
             {
-                return NotFound($"Nenhum produto encontrado para a categoria {id}.");
+                throw new ArgumentException("Erro ao obter produtos por categoria!");
             }
-
-            return Ok(produtosDaCategoria);
         }
 
 
@@ -61,14 +64,7 @@ namespace CatalogoDeProdutos.Controllers
                 var produtoEntity = await uof.ProdutoService.AdicionarAsync(produto);
                 uof.Commit();
 
-                var produtoCriado = new ProdutoDTO
-                {
-                    Id = produtoEntity.Id,
-                    Nome = produtoEntity.Nome,
-                    Descricao = produtoEntity.Descricao,
-                    ImgUrl = produtoEntity.ImgUrl,
-                    CategoriaId = produtoEntity.CategoriaId
-                };
+                var produtoCriado = produtoEntity.ToProdutoDTO();
 
                 return CreatedAtRoute("ObterProdutoPorId", new { id = produtoCriado.Id }, produtoCriado);
             }
