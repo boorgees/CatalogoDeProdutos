@@ -1,4 +1,5 @@
 using CatalogoDeProdutos.Data;
+using CatalogoDeProdutos.DTOs.Mappings;
 using CatalogoDeProdutos.Repositories.Implementations;
 using CatalogoDeProdutos.Repositories.Interfaces;
 using CatalogoDeProdutos.Services.Implementations;
@@ -10,8 +11,8 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"))
-          .EnableSensitiveDataLogging()
-          .LogTo(Console.WriteLine, LogLevel.Information));
+        .EnableSensitiveDataLogging()
+        .LogTo(Console.WriteLine, LogLevel.Information));
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
@@ -21,6 +22,7 @@ builder.Services.AddScoped<ICategoriaRepository, CategoriaRepository>();
 builder.Services.AddScoped<IProdutoRepository, ProdutoRepository>();
 builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
 builder.Services.AddScoped<IUnityOfWork, UnityOfWork>();
+builder.Services.AddAutoMapper(typeof(DomainDtoMappingProfile));
 
 // Configuração do NSwag para Swagger UI
 builder.Services.AddSwaggerGen();

@@ -24,6 +24,7 @@ namespace CatalogoDeProdutos.Services.Implementations
                 throw new Exception("Nenhuma categoria encontrada.");
             }
 
+
             var categoriasDto = categorias.Select(c => new CategoriaDTO
             {
                 Id = c.Id,
@@ -31,6 +32,7 @@ namespace CatalogoDeProdutos.Services.Implementations
                 Descricao = c.Descricao,
                 ImgUrl = c.ImgUrl
             }).ToList();
+
 
             return categoriasDto;
         }
@@ -108,8 +110,10 @@ namespace CatalogoDeProdutos.Services.Implementations
 
             var categoriaExistente = await _categoriaRepository.GetById(c => c.Id == categoriaDto.Id);
 
-            if(categoriaExistente is null)
+            if (categoriaExistente is null)
+            {
                 throw new Exception($"Categoria com ID {categoriaDto.Id} não encontrada.");
+            }
 
             try
             {

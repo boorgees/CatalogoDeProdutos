@@ -12,6 +12,7 @@ namespace CatalogoDeProdutos.Services.Implementations
         private readonly ICategoriaRepository _categoriaRepository;
         private readonly IProdutoRepository _produtoRepository;
 
+
         public ProdutoService(IProdutoRepository produtoRepository, ICategoriaRepository categoriaRepository)
         {
             _produtoRepository = produtoRepository;
