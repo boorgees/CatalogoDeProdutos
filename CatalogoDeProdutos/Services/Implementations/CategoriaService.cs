@@ -1,5 +1,6 @@
 using System.Linq.Expressions;
 using CatalogoDeProdutos.DTOs;
+using CatalogoDeProdutos.DTOs.Mappings;
 using CatalogoDeProdutos.Models;
 using CatalogoDeProdutos.Repositories.Interfaces;
 using CatalogoDeProdutos.Services.Interfaces;
@@ -24,15 +25,7 @@ namespace CatalogoDeProdutos.Services.Implementations
                 throw new Exception("Nenhuma categoria encontrada.");
             }
 
-
-            var categoriasDto = categorias.Select(c => new CategoriaDTO
-            {
-                Id = c.Id,
-                Nome = c.Nome,
-                Descricao = c.Descricao,
-                ImgUrl = c.ImgUrl
-            }).ToList();
-
+            var categoriasDto = categorias.ToCategoriaDTOList();
 
             return categoriasDto;
         }
@@ -47,35 +40,26 @@ namespace CatalogoDeProdutos.Services.Implementations
                 return null;
             }
 
-            var categoriaDto = new CategoriaDTO
-            {
-                Id = categoria.Id,
-                Nome = categoria.Nome,
-                Descricao = categoria.Descricao,
-                ImgUrl = categoria.ImgUrl
-            };
+            var categoriaDto = categoria.ToCategoriaDTO();
 
             return categoriaDto;
         }
 
-        public async Task<Categoria> AdicionarAsync(CategoriaDTO categoriaDto)
+        public async Task<CategoriaDTO> AdicionarAsync(CategoriaDTO categoriaDto)
         {
             if (categoriaDto == null)
             {
                 throw new ArgumentNullException(nameof(categoriaDto));
             }
 
-            var categoria = new Categoria
-            {
-                Nome = categoriaDto.Nome,
-                Descricao = categoriaDto.Descricao,
-                ImgUrl = categoriaDto.ImgUrl
-            };
+            var categoria = categoriaDto.ToCategoria();
 
             try
             {
                 await _categoriaRepository.Create(categoria);
-                return categoria;
+
+                var categoriaCriadaDto = categoria.ToCategoriaDTO();
+                return categoriaCriadaDto;
             }
             catch (Exception ex)
             {

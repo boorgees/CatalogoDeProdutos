@@ -1,5 +1,6 @@
 using CatalogoDeProdutos.DTOs;
 using CatalogoDeProdutos.DTOs.Mappings;
+using CatalogoDeProdutos.Pagination;
 using CatalogoDeProdutos.Repositories.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
@@ -20,6 +21,20 @@ namespace CatalogoDeProdutos.Controllers
             }
 
             return Ok(produtos);
+        }
+
+        [HttpGet("pagination")]
+        public async Task<ActionResult<IEnumerable<ProdutoDTO>>> Get([FromQuery] ProdutosParameters produtosParameters)
+        {
+            try
+            {
+                var produtos = await uof.ProdutoService.GetProdutos(produtosParameters);
+                return Ok(produtos);
+            }
+            catch (Exception)
+            {
+                return BadRequest("Não foi possivel obter os produtos.");
+            }
         }
 
         [HttpGet("{id:int}/categorias", Name = "ObterProdutosPorCategoria")]

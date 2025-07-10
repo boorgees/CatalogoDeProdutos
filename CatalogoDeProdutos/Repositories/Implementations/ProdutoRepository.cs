@@ -1,6 +1,8 @@
 using CatalogoDeProdutos.Data;
 using CatalogoDeProdutos.DTOs;
+using CatalogoDeProdutos.DTOs.Mappings;
 using CatalogoDeProdutos.Models;
+using CatalogoDeProdutos.Pagination;
 using CatalogoDeProdutos.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
@@ -24,6 +26,16 @@ namespace CatalogoDeProdutos.Repositories.Implementations
                     CategoriaId = p.CategoriaId
                 })
                 .ToListAsync();
+        }
+        public async Task<IEnumerable<ProdutoDTO>> GetProdutos(ProdutosParameters produtosParameters)
+        {
+            var produtos = await GetAll()
+                .OrderBy(p => p.Nome)
+                .Skip((produtosParameters.PageNumber - 1) * produtosParameters.PageSize)
+                .Take(produtosParameters.PageSize)
+                .ToListAsync();
+
+            return produtos.ToProdutoDTOList();
         }
     }
 }

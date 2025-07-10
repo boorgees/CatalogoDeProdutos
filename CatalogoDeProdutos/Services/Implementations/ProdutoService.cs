@@ -2,6 +2,7 @@ using System.Linq.Expressions;
 using CatalogoDeProdutos.DTOs;
 using CatalogoDeProdutos.DTOs.Mappings;
 using CatalogoDeProdutos.Models;
+using CatalogoDeProdutos.Pagination;
 using CatalogoDeProdutos.Repositories.Interfaces;
 using CatalogoDeProdutos.Services.Interfaces;
 
@@ -50,6 +51,33 @@ namespace CatalogoDeProdutos.Services.Implementations
             var produtosDto = produto.ToProdutoDTO();
 
             return produtosDto;
+        }
+        public async Task<IEnumerable<ProdutoDTO>> GetProdutos(ProdutosParameters produtosParameters)
+        {
+            try
+            {
+                var produtos = await _produtoRepository.GetProdutos(produtosParameters);
+
+                return produtos;
+            }
+            catch (Exception e)
+            {
+                throw new Exception();
+            }
+
+            // var produtos = new List<Produto>();
+            //
+            // try
+            // {
+            //     foreach (var produto in _produtoRepository.GetProdutos()) produtos.Add(produto);
+            // }
+            // catch (Exception e)
+            // {
+            //     throw new Exception("Nenhum produto encontrado.");
+            // }
+            //
+            // var produtosDto = produtos.ToProdutoDTOList();
+            // return produtosDto;
         }
 
         public async Task RemoverAsync(int id)
