@@ -28,7 +28,7 @@ namespace CatalogoDeProdutos.Services.Implementations
                 await foreach (var produto in _produtoRepository.GetAll())
                     produtos.Add(produto);
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 throw new Exception("Nenhum produto encontrado.");
             }
@@ -52,33 +52,7 @@ namespace CatalogoDeProdutos.Services.Implementations
 
             return produtosDto;
         }
-        public async Task<IEnumerable<ProdutoDTO>> GetProdutos(ProdutosParameters produtosParameters)
-        {
-            try
-            {
-                var produtos = await _produtoRepository.GetProdutos(produtosParameters);
 
-                return produtos;
-            }
-            catch (Exception e)
-            {
-                throw new Exception();
-            }
-
-            // var produtos = new List<Produto>();
-            //
-            // try
-            // {
-            //     foreach (var produto in _produtoRepository.GetProdutos()) produtos.Add(produto);
-            // }
-            // catch (Exception e)
-            // {
-            //     throw new Exception("Nenhum produto encontrado.");
-            // }
-            //
-            // var produtosDto = produtos.ToProdutoDTOList();
-            // return produtosDto;
-        }
 
         public async Task RemoverAsync(int id)
         {
@@ -191,6 +165,10 @@ namespace CatalogoDeProdutos.Services.Implementations
             }
 
             return produtosDaCategoria;
+        }
+        public async Task<PagedList<Produto>> GetProdutosAsync(ProdutosParameters produtosParameters)
+        {
+            return await _produtoRepository.GetProdutosAsync(produtosParameters);
         }
     }
 }

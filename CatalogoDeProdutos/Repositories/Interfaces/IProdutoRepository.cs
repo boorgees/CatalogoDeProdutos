@@ -7,6 +7,6 @@ namespace CatalogoDeProdutos.Repositories.Interfaces
     public interface IProdutoRepository : IRepository<Produto>
     {
         Task<List<ProdutoDTO>> ObterProdutosPorCategoriaAsync(int categoriaId);
-        Task<IEnumerable<ProdutoDTO>> GetProdutos(ProdutosParameters produtosParameters);
+        Task<PagedList<Produto>> GetProdutosAsync(ProdutosParameters produtosParameters);
     }
 }

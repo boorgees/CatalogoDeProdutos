@@ -1,6 +1,5 @@
 using CatalogoDeProdutos.Data;
 using CatalogoDeProdutos.DTOs;
-using CatalogoDeProdutos.DTOs.Mappings;
 using CatalogoDeProdutos.Models;
 using CatalogoDeProdutos.Pagination;
 using CatalogoDeProdutos.Repositories.Interfaces;
@@ -27,15 +26,11 @@ namespace CatalogoDeProdutos.Repositories.Implementations
                 })
                 .ToListAsync();
         }
-        public async Task<IEnumerable<ProdutoDTO>> GetProdutos(ProdutosParameters produtosParameters)
+        public async Task<PagedList<Produto>> GetProdutosAsync(ProdutosParameters produtosParameters)
         {
-            var produtos = await GetAll()
-                .OrderBy(p => p.Nome)
-                .Skip((produtosParameters.PageNumber - 1) * produtosParameters.PageSize)
-                .Take(produtosParameters.PageSize)
-                .ToListAsync();
+            var produtos = await _context.Produtos.OrderBy(p => p.Id).AsNoTracking().ToListAsync();
 
-            return produtos.ToProdutoDTOList();
+            return PagedList<Produto>.ToPagedList(produtos, produtosParameters.PageNumber, produtosParameters.PageSize);
         }
     }
 }

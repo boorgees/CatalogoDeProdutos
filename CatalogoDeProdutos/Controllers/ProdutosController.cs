@@ -3,6 +3,7 @@ using CatalogoDeProdutos.DTOs.Mappings;
 using CatalogoDeProdutos.Pagination;
 using CatalogoDeProdutos.Repositories.Interfaces;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
 
 namespace CatalogoDeProdutos.Controllers
 {
@@ -28,7 +29,20 @@ namespace CatalogoDeProdutos.Controllers
         {
             try
             {
-                var produtos = await uof.ProdutoService.GetProdutos(produtosParameters);
+                var produtos = await uof.ProdutoService.GetProdutosAsync(produtosParameters);
+
+                var metadata = new
+                {
+                    produtos.TotalCount,
+                    produtos.PageSize,
+                    produtos.CurrentPage,
+                    produtos.TotalPages,
+                    produtos.HasNext,
+                    produtos.HasPrevious
+                };
+
+                Response.Headers.Add("X-Pagination", JsonConvert.SerializeObject(metadata));
+
                 return Ok(produtos);
             }
             catch (Exception)
