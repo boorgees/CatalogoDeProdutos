@@ -1,4 +1,6 @@
 using CatalogoDeProdutos.DTOs;
+using CatalogoDeProdutos.Models;
+using CatalogoDeProdutos.Pagination;
 
 namespace CatalogoDeProdutos.Services.Interfaces
 {
@@ -9,5 +11,6 @@ namespace CatalogoDeProdutos.Services.Interfaces
         Task<CategoriaDTO> AdicionarAsync(CategoriaDTO categoria);
         Task<CategoriaDTO> AtualizarAsync(CategoriaDTO categoria);
         Task RemoverAsync(int id);
+        Task<PagedList<Categoria>> GetCategoriasAsync(CategoriasParameters categoriasParameters);
     }
 }

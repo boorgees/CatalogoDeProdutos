@@ -2,6 +2,7 @@ using System.Linq.Expressions;
 using CatalogoDeProdutos.DTOs;
 using CatalogoDeProdutos.DTOs.Mappings;
 using CatalogoDeProdutos.Models;
+using CatalogoDeProdutos.Pagination;
 using CatalogoDeProdutos.Repositories.Interfaces;
 using CatalogoDeProdutos.Services.Interfaces;
 
@@ -67,6 +68,10 @@ namespace CatalogoDeProdutos.Services.Implementations
             }
         }
 
+        public async Task<PagedList<Categoria>> GetCategoriasAsync(CategoriasParameters categoriasParameters)
+        {
+            return await _categoriaRepository.GetCategoriasAsync(categoriasParameters);
+        }
         public async Task RemoverAsync(int id)
         {
             var categoria = await _categoriaRepository.GetById(c => c.Id == id);

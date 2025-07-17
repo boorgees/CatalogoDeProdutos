@@ -1,7 +1,8 @@
 using CatalogoDeProdutos.DTOs;
-using CatalogoDeProdutos.Models;
+using CatalogoDeProdutos.Pagination;
 using CatalogoDeProdutos.Repositories.Interfaces;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
 
 namespace CatalogoDeProdutos.Controllers
 {
@@ -20,6 +21,33 @@ namespace CatalogoDeProdutos.Controllers
             }
 
             return Ok(categorias);
+        }
+
+        [HttpGet("pagination")]
+        public async Task<ActionResult<IEnumerable<CategoriaDTO>>> Get([FromQuery] CategoriasParameters categoriasParameters)
+        {
+            try
+            {
+                var categorias = await uof.CategoriaService.GetCategoriasAsync(categoriasParameters);
+
+                var metadata = new
+                {
+                    categorias.TotalCount,
+                    categorias.PageSize,
+                    categorias.CurrentPage,
+                    categorias.TotalPages,
+                    categorias.HasNext,
+                    categorias.HasPrevious
+                };
+
+                Response.Headers.Add("X-Pagination", JsonConvert.SerializeObject(metadata));
+
+                return Ok(categorias);
+            }
+            catch (Exception)
+            {
+                return BadRequest("Não foi possivel obter as categorias.");
+            }
         }
 
         [HttpGet("{id:int}", Name = "ObterCategoriaPorId")] // OK
