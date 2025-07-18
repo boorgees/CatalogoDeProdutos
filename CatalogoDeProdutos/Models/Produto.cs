@@ -9,6 +9,7 @@ namespace CatalogoDeProdutos.Models
         public string? Descricao { get; set; }
         public string? ImgUrl { get; set; }
         public int CategoriaId { get; set; }
+        public decimal? Preco { get; set; }
 
         [JsonIgnore]
         public Categoria? Categoria { get; set; }

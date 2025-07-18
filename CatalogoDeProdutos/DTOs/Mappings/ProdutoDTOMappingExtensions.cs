@@ -13,6 +13,7 @@ namespace CatalogoDeProdutos.DTOs.Mappings
                     Id = produto.Id,
                     Nome = produto.Nome,
                     Descricao = produto.Descricao,
+                    Preco = produto.Preco,
                     ImgUrl = produto.ImgUrl,
                     CategoriaId = produto.CategoriaId
                 };
@@ -27,6 +28,7 @@ namespace CatalogoDeProdutos.DTOs.Mappings
                     Id = produtoDto.Id,
                     Nome = produtoDto.Nome,
                     Descricao = produtoDto.Descricao,
+                    Preco = produtoDto.Preco,
                     ImgUrl = produtoDto.ImgUrl,
                     CategoriaId = produtoDto.CategoriaId
                 };
@@ -43,8 +45,10 @@ namespace CatalogoDeProdutos.DTOs.Mappings
             {
                 Id = produto.Id,
                 Nome = produto.Nome,
+                Preco = produto.Preco,
                 Descricao = produto.Descricao,
-                ImgUrl = produto.ImgUrl
+                ImgUrl = produto.ImgUrl,
+                CategoriaId = produto.CategoriaId
             }).ToList();
         }
     }

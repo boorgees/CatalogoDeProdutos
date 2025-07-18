@@ -51,6 +51,26 @@ namespace CatalogoDeProdutos.Controllers
             }
         }
 
+        [HttpGet("filter/preco/pagination")] // ARRUMAR QQQ/////
+        public async Task<ActionResult<IEnumerable<ProdutoDTO>>> GetByPreco([FromQuery] ProdutosFiltroPreco produtosFiltroParams)
+        {
+            var produtos = await uof.ProdutoService.GetProdutosFiltroAsync(produtosFiltroParams);
+
+            var metadata = new
+            {
+                produtos.TotalCount,
+                produtos.PageSize,
+                produtos.CurrentPage,
+                produtos.TotalPages,
+                produtos.HasNext,
+                produtos.HasPrevious
+            };
+
+            Response.Headers.Add("X-Pagination", JsonConvert.SerializeObject(metadata));
+
+            return Ok(produtos);
+        } //  ARRUMAR //
+
         [HttpGet("{id:int}/categorias", Name = "ObterProdutosPorCategoria")]
         public async Task<ActionResult<IEnumerable<ProdutoDTO>>> ObterProdutosPorCategoriaAsync(int id) // OK
         {

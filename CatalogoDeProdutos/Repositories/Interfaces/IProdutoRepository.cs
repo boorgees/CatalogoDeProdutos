@@ -8,5 +8,6 @@ namespace CatalogoDeProdutos.Repositories.Interfaces
     {
         Task<List<ProdutoDTO>> ObterProdutosPorCategoriaAsync(int categoriaId);
         Task<PagedList<Produto>> GetProdutosAsync(ProdutosParameters produtosParameters);
+        Task<PagedList<ProdutoDTO>> GetProdutosFiltroPreco(ProdutosFiltroPreco produtosFiltroPreco);
     }
 }

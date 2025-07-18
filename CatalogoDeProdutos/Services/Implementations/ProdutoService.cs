@@ -78,6 +78,7 @@ namespace CatalogoDeProdutos.Services.Implementations
             }
         }
 
+
         public async Task<Produto> AdicionarAsync(ProdutoDTO produto)
         {
             if (string.IsNullOrEmpty(produto.Nome))
@@ -169,6 +170,11 @@ namespace CatalogoDeProdutos.Services.Implementations
         public async Task<PagedList<Produto>> GetProdutosAsync(ProdutosParameters produtosParameters)
         {
             return await _produtoRepository.GetProdutosAsync(produtosParameters);
+        }
+
+        public async Task<PagedList<ProdutoDTO>> GetProdutosFiltroAsync(ProdutosFiltroPreco produtosFiltroParams)
+        {
+            return await _produtoRepository.GetProdutosFiltroPreco(produtosFiltroParams);
         }
     }
 }
