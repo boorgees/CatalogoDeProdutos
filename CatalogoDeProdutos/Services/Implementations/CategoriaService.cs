@@ -72,6 +72,11 @@ namespace CatalogoDeProdutos.Services.Implementations
         {
             return await _categoriaRepository.GetCategoriasAsync(categoriasParameters);
         }
+        public async Task<PagedList<Categoria>> GetCategoriasFiltroNome(CategoriaFiltroNome categoriasParameters)
+        {
+            var categorias = await _categoriaRepository.GetCategoriasFiltroNome(categoriasParameters);
+            return categorias;
+        }
         public async Task RemoverAsync(int id)
         {
             var categoria = await _categoriaRepository.GetById(c => c.Id == id);

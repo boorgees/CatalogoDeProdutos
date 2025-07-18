@@ -12,5 +12,6 @@ namespace CatalogoDeProdutos.Services.Interfaces
         Task<CategoriaDTO> AtualizarAsync(CategoriaDTO categoria);
         Task RemoverAsync(int id);
         Task<PagedList<Categoria>> GetCategoriasAsync(CategoriasParameters categoriasParameters);
+        Task<PagedList<Categoria>> GetCategoriasFiltroNome(CategoriaFiltroNome categoriasParameters);
     }
 }

@@ -50,6 +50,24 @@ namespace CatalogoDeProdutos.Controllers
             }
         }
 
+        [HttpGet("filter/nome/pagination")]
+        public async Task<ActionResult<IEnumerable<CategoriaDTO>>> GetByNome([FromQuery] CategoriaFiltroNome categoriaFiltroParams)
+        {
+            var categorias = await uof.CategoriaService.GetCategoriasFiltroNome(categoriaFiltroParams);
+
+            var metadata = new
+            {
+                categorias.TotalCount,
+                categorias.PageSize,
+                categorias.CurrentPage,
+                categorias.TotalPages,
+                categorias.HasNext,
+                categorias.HasPrevious
+            };
+            Response.Headers.Add("X-Pagination", JsonConvert.SerializeObject(metadata));
+            return Ok(categorias);
+        }
+
         [HttpGet("{id:int}", Name = "ObterCategoriaPorId")] // OK
         public async Task<ActionResult<CategoriaDTO>> ObterPorIdAsync(int id)
         {
